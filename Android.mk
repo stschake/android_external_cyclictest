@@ -19,7 +19,7 @@ LOCAL_MODULE_TAGS := eng
 LOCAL_STATIC_LIBRARIES := librttest
 FILE_LIST := $(wildcard $(LOCAL_PATH)/src/cyclictest/*.c)
 LOCAL_SRC_FILES := $(FILE_LIST:$(LOCAL_PATH)/%=%)
-LOCAL_CFLAGS += $(commonFlags) -femulated-tls
+LOCAL_CFLAGS += $(commonFlags)
 LOCAL_LDLIBS += -ldl
 LOCAL_LDFLAGS += -pie
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/src/include
