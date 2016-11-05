@@ -456,18 +456,34 @@ static int trace_file_exists(char *name)
 }
 
 #define TRACEBUFSIZ 1024
-static __thread char tracebuf[TRACEBUFSIZ];
+static pthread_key_t tracebuf_key;
+static pthread_once_t tracebuf_key_once = PTHREAD_ONCE_INIT;
+
+static void make_tracebuf_key()
+{
+	pthread_key_create(&tracebuf_key, NULL);
+}
 
 static void tracemark(char *fmt, ...) __attribute__((format(printf, 1, 2)));
 static void tracemark(char *fmt, ...)
 {
 	va_list ap;
 	int len;
+	char* tracebuf;
 
 	/* bail out if we're not tracing */
 	/* or if the kernel doesn't support trace_mark */
 	if (tracemark_fd < 0)
 		return;
+
+	pthread_once(&tracebuf_key_once, make_tracebuf_key);
+	tracebuf = (char*) pthread_getspecific(tracebuf_key);
+	if (tracebuf == NULL)
+	{
+		tracebuf = (char*) malloc(TRACEBUFSIZ);
+		memset(tracebuf, 0, TRACEBUFSIZ);
+		pthread_setspecific(tracebuf_key, tracebuf);
+	}
 
 	va_start(ap, fmt);
 	len = vsnprintf(tracebuf, TRACEBUFSIZ, fmt, ap);
